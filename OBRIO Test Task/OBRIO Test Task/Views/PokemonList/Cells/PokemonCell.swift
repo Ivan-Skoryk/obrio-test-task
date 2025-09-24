@@ -15,6 +15,8 @@ class PokemonCell: UITableViewCell {
         return imageView
     }()
     
+    private let pokemonImageViewPlaceholder = UIActivityIndicatorView(style: .medium)
+    
     private let nameTextLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 17, weight: .medium)
@@ -59,6 +61,7 @@ class PokemonCell: UITableViewCell {
         super.prepareForReuse()
         
         pokemonImageView.image = nil
+        pokemonImageViewPlaceholder.alpha = 1
         nameTextLabel.text = nil
         idTextLabel.text = nil
     }
@@ -74,7 +77,12 @@ class PokemonCell: UITableViewCell {
         deleteButton.tintColor = .systemRed
         deleteButton.addTarget(self, action: #selector(onDelete), for: .touchUpInside)
         
-        cancellable = loadImage(for: pokemon.imageURLString).sink { [weak self] image in self?.pokemonImageView.image = image }
+        pokemonImageViewPlaceholder.startAnimating()
+        
+        cancellable = loadImage(for: pokemon.imageURLString).sink { [weak self] image in
+            self?.pokemonImageViewPlaceholder.alpha = 0
+            self?.pokemonImageView.image = image
+        }
     }
     
     private func loadImage(for stringURL: String) -> AnyPublisher<UIImage?, Never> {
@@ -98,12 +106,14 @@ class PokemonCell: UITableViewCell {
      
     private func setupUI() {
         contentView.addSubview(pokemonImageView)
+        contentView.addSubview(pokemonImageViewPlaceholder)
         contentView.addSubview(nameTextLabel)
         contentView.addSubview(idTextLabel)
         contentView.addSubview(favouriteButton)
         contentView.addSubview(deleteButton)
         
         pokemonImageView.translatesAutoresizingMaskIntoConstraints = false
+        pokemonImageViewPlaceholder.translatesAutoresizingMaskIntoConstraints = false
         nameTextLabel.translatesAutoresizingMaskIntoConstraints = false
         idTextLabel.translatesAutoresizingMaskIntoConstraints = false
         favouriteButton.translatesAutoresizingMaskIntoConstraints = false
@@ -116,6 +126,11 @@ class PokemonCell: UITableViewCell {
             pokemonImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
             pokemonImageView.heightAnchor.constraint(equalToConstant: 80,),
             pokemonImageView.widthAnchor.constraint(equalToConstant: 60),
+            
+            pokemonImageViewPlaceholder.leadingAnchor.constraint(equalTo: pokemonImageView.leadingAnchor),
+            pokemonImageViewPlaceholder.trailingAnchor.constraint(equalTo: pokemonImageView.trailingAnchor),
+            pokemonImageViewPlaceholder.topAnchor.constraint(equalTo: pokemonImageView.topAnchor),
+            pokemonImageViewPlaceholder.bottomAnchor.constraint(equalTo: pokemonImageView.bottomAnchor),
             
             nameTextLabel.leadingAnchor.constraint(equalTo: pokemonImageView.trailingAnchor, constant: 8),
             nameTextLabel.bottomAnchor.constraint(equalTo: pokemonImageView.centerYAnchor, constant: 4),
